@@ -1,0 +1,69 @@
+#canvas {
+  /* height: 100vh;
+  width: 100vw; */
+  height: 512px;
+  width: 512px;
+  border: 2px solid red;
+}
+
+body,
+html {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+#controllers {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+.controller {
+  height: 10px;
+  width: 150px;
+  background-color: rgb(207, 207, 207);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.controller > .trigger {
+  height: 20px;
+  width: 20px;
+  border-radius: 100%;
+  background-color: rgb(156, 150, 150);
+  transform: translateX(-10px);
+  cursor: pointer;
+}
+.controller > .bar {
+  height: 10px;
+  background-color: rgb(17, 22, 49);
+  border-bottom-left-radius: 30px;
+  border-top-left-radius: 30px;
+  width: 30px;
+}
+
+.lower-limit {
+  margin-right: 10px;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
+  color: rgb(92, 85, 85);
+  /* width: 28px; */
+}
+
+.upper-limit {
+  margin-left: 10px;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
+  color: rgb(92, 85, 85);
+}
+
+.controller-wrapper {
+  display: flex;
+  align-items: center;
+}
