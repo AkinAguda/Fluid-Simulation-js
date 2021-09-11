@@ -81,7 +81,6 @@ gl.useProgram(program);
 const drawGrid = () => {
   const populateVertices = () => {
     let pointIndex = 0;
-    const centers = [];
 
     for (let i = 0; i < N + 2; i++) {
       for (let j = 0; j < N + 2; j++) {
@@ -135,7 +134,7 @@ const drawGrid = () => {
   gl.enableVertexAttribArray(positionAttributeLocation);
   gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-  gl.drawArrays(gl.TRIANGLES, 0, 6 * Math.pow(N + 2, 2));
+  gl.drawArrays(gl.TRIANGLES, 0, 6 * size);
 };
 
 drawGrid();
