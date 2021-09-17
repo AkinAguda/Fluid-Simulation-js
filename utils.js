@@ -203,3 +203,47 @@ var m3 = {
     ];
   },
 };
+
+const round = (number, precision) =>
+  Math.round((number + Number.EPSILON) * precision) / precision;
+
+const isPrecise = (x, y, precision) => {
+  return round(Math.abs(x - y), precision) <= 1 / precision;
+};
+
+// This method gets the estimates after a certain iteration
+const gaussSeidel1 = (functions, initialValues, iter) => {
+  const initialValuesClone = [...initialValues];
+  for (let i = 0; i < iter; i++) {
+    initialValues.forEach((_, index) => {
+      initialValuesClone[index] = functions[index](...initialValuesClone);
+    });
+  }
+  return initialValuesClone;
+};
+
+// This gets the estimate to a certain degree of precision
+const gaussSeidel = (functions, initialValues, precision) => {
+  const initialValuesClone = [...initialValues];
+  const prevIterationValues = [];
+  let precisionCount = 0;
+  while (precisionCount < initialValues.length) {
+    precisionCount = 0;
+    initialValues.forEach((_, index) => {
+      initialValuesClone[index] = functions[index](...initialValuesClone);
+      if (prevIterationValues[index] !== undefined && prevIterationValues) {
+        if (
+          isPrecise(
+            prevIterationValues[index],
+            initialValuesClone[index],
+            precision
+          )
+        ) {
+          precisionCount += 1;
+        }
+      }
+      prevIterationValues[index] = initialValuesClone[index];
+    });
+  }
+  return initialValuesClone;
+};

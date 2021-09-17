@@ -120,6 +120,8 @@ const drawGrid = () => {
 
   populateVertices();
 
+  console.log(points.length);
+
   gl.uniformMatrix3fv(
     transformationMatrixLocation,
     false,
@@ -138,3 +140,29 @@ const drawGrid = () => {
 };
 
 drawGrid();
+
+console.log(
+  gaussSeidel1(
+    [
+      (a, b, c, d) => (1 / 10) * (3 + 2 * b + c + d),
+      (a, b, c, d) => (1 / 10) * (15 + 2 * a + c + d),
+      (a, b, c, d) => (1 / 10) * (27 + a + b + d),
+      (a, b, c, d) => (1 / 10) * (-9 + a + b + 2 * c),
+    ],
+    [0, 0, 0, 0],
+    6
+  )
+);
+
+console.log(
+  gaussSeidel(
+    [
+      (a, b, c, d) => (1 / 10) * (3 + 2 * b + c + d),
+      (a, b, c, d) => (1 / 10) * (15 + 2 * a + c + d),
+      (a, b, c, d) => (1 / 10) * (27 + a + b + d),
+      (a, b, c, d) => (1 / 10) * (-9 + a + b + 2 * c),
+    ],
+    [0, 0, 0, 0],
+    1000
+  )
+);
