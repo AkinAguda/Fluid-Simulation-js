@@ -22,7 +22,7 @@ const size = Math.pow(N + 2, 2);
 
 let dt = 1 / 60 / 2;
 
-const diffusion = 2;
+const diffusion = 20;
 
 const u = new Float64Array(size); // x component of the velocity of every particle in the fluid
 
@@ -186,18 +186,6 @@ const dd = (x, y) => (a, b, c, d) => {
 };
 
 const calcNextDensity = (x, y) => {
-  // const k = dt * diffusion;
-  // const calcAdjDensities = gaussSeidel(
-  //   [dd(x, y), dd(x - 1, y), dd(x, y + 1), dd(x, y - 1)],
-  //   [0, 0, 0, 0],
-  //   1000
-  // );
-  // return (
-  //   (currDens[ix(x, y)] +
-  //     k *
-  //       ) /
-  //   (1 + k)
-  // );
   return dd(
     x,
     y
@@ -212,12 +200,6 @@ const calcNextDensity = (x, y) => {
 
 // Move this function to utils maybe
 const diffuse = () => {
-  // currDens.forEach((density, index) => {
-  //   for (let i = index * 6; i < index * 6 + 6; i++) {
-  //     dneistyPerVertex[i] = density;
-  //   }
-  // });
-
   for (let i = 1; i <= N; i++) {
     for (let j = 1; j <= N; j++) {
       const index = ix(i, j);
