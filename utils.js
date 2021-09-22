@@ -223,7 +223,12 @@ const gaussSeidel1 = (functions, initialValues, iter) => {
 };
 
 // This gets the estimate to a certain degree of precision
-const gaussSeidel = (functions, initialValues, precision) => {
+const gaussSeidel = (
+  functions,
+  initialValues,
+  precision,
+  finalPrecision = 10
+) => {
   const initialValuesClone = [...initialValues];
   const prevIterationValues = [];
   let precisionCount = 0;
@@ -245,5 +250,7 @@ const gaussSeidel = (functions, initialValues, precision) => {
       prevIterationValues[index] = initialValuesClone[index];
     });
   }
-  return initialValuesClone;
+  return initialValuesClone.map((v) => round(v, finalPrecision));
 };
+
+// const convertDensityToColor = (density) =>
