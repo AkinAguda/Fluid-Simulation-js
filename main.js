@@ -1,3 +1,5 @@
+const resetButton = document.getElementById("reset");
+
 const canvas = document.getElementById("canvas");
 
 const gl = canvas.getContext("webgl");
@@ -14,11 +16,13 @@ gl.clear(gl.COLOR_BUFFER_BIT);
 
 // this is assuming width and height are same dimensions
 
-const N = 128;
+const N = 64;
 
 const size = Math.pow(N + 2, 2);
 
 let dt = 1 / 60 / 2;
+
+const diffusion = 2;
 
 const u = new Float64Array(size); // x component of the velocity of every particle in the fluid
 
@@ -28,11 +32,11 @@ const uPrev = new Float64Array(size); // x component of the previous velocity of
 
 const vPrev = new Float64Array(size); // y component of the previous velocity of every particle in the fluid
 
-const dens = new Float32Array(size); // density of every particle in the fluid
+let currDens = new Float32Array(size); // density of every particle in the fluid
+
+let nextDens = new Float64Array(size); // previous density of every particle in the fluid
 
 const dneistyPerVertex = new Float32Array(size * 6); // This stores the colors that will be passed as a varying to the fragment shader
-
-const densPrev = new Float64Array(size); // previous density of every particle in the fluid
 
 const points = new Float32Array(size * 12); // The centers of each square where the vector for that unit of fluid sits at (has its tail at)
 
@@ -56,10 +60,16 @@ let mouseEventState = {
  */
 const ix = (x, y) => x + (N + 2) * y;
 
-const updateDensity = (x, y) => {
+const updateDensity = (y, x) => {
   // TODO: Remember to update the projection matrix to fix the irrgularity of puttin y before x
-  dens[ix(y, x)] = round(Math.random(), 10);
+  // currDens[ix(x, y)] = round(Math.random(), 10);
+  currDens[ix(x, y)] = 1;
 };
+
+resetButton.addEventListener("click", () => {
+  currDens = new Float32Array(size);
+  nextDens = new Float32Array(size);
+});
 
 canvas.addEventListener("mousedown", () => {
   mouseEventState = { ...mouseEventState, mouseDown: true };
@@ -70,6 +80,10 @@ canvas.addEventListener("mousemove", (e) => {
     mouseEventState = { ...mouseEventState, dragging: true };
     updateDensity(...getEventLocation(e));
   }
+});
+
+canvas.addEventListener("click", (e) => {
+  updateDensity(...getEventLocation(e));
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -166,14 +180,58 @@ const populateVertices = () => {
   }
 };
 
-populateVertices();
+const dd = (x, y) => (a, b, c, d) => {
+  const k = dt * diffusion;
+  return (currDens[ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
+};
+
+const calcNextDensity = (x, y) => {
+  // const k = dt * diffusion;
+  // const calcAdjDensities = gaussSeidel(
+  //   [dd(x, y), dd(x - 1, y), dd(x, y + 1), dd(x, y - 1)],
+  //   [0, 0, 0, 0],
+  //   1000
+  // );
+  // return (
+  //   (currDens[ix(x, y)] +
+  //     k *
+  //       ) /
+  //   (1 + k)
+  // );
+  return dd(
+    x,
+    y
+  )(
+    ...gaussSeidel(
+      [dd(x, y), dd(x - 1, y), dd(x, y + 1), dd(x, y - 1)],
+      [0, 0, 0, 0],
+      1000
+    )
+  );
+};
+
+// Move this function to utils maybe
+const diffuse = () => {
+  // currDens.forEach((density, index) => {
+  //   for (let i = index * 6; i < index * 6 + 6; i++) {
+  //     dneistyPerVertex[i] = density;
+  //   }
+  // });
+
+  for (let i = 1; i <= N; i++) {
+    for (let j = 1; j <= N; j++) {
+      const index = ix(i, j);
+      nextDens[index] = calcNextDensity(i, j);
+      for (let i = index * 6; i < index * 6 + 6; i++) {
+        dneistyPerVertex[i] = nextDens[index];
+      }
+    }
+  }
+  currDens = nextDens;
+};
 
 const drawGrid = () => {
-  dens.forEach((density, index) => {
-    for (let i = index * 6; i < index * 6 + 6; i++) {
-      dneistyPerVertex[i] = density;
-    }
-  });
+  diffuse();
 
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
@@ -203,4 +261,9 @@ const draw = (now) => {
   requestAnimationFrame(draw);
 };
 
-requestAnimationFrame(draw);
+const start = () => {
+  populateVertices();
+  requestAnimationFrame(draw);
+};
+
+start();

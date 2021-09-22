@@ -15,12 +15,17 @@ html {
   align-items: center;
   justify-content: center;
   height: 100vh;
+  flex-direction: column;
 }
 
 #controllers {
   position: fixed;
   top: 20px;
   right: 20px;
+}
+
+.button-box {
+  margin-top: 30px;
 }
 
 .controller {
