@@ -133,6 +133,17 @@ class Controller {
   }
 }
 
+const getEventLocation = (e) => {
+  const rect = e.target.getBoundingClientRect();
+  const x = e.clientX - rect.left; //x position within the element.
+  const y = e.clientY - rect.top; //y position within the element.
+  const hRatio = N / rect.height;
+  const wRatio = N / rect.width;
+  const convertedX = Math.round(x * wRatio);
+  const convertedY = Math.round(y * hRatio);
+  return [convertedX, convertedY];
+};
+
 // Webgl functions
 
 const createShader = (gl, type, source) => {

@@ -38,6 +38,15 @@ const points = new Float32Array(size * 12); // The centers of each square where 
 
 const halfSquare = gl.canvas.width / (N + 2) / 2;
 
+const defaultMouseEventState = {
+  mouseDown: false,
+  dragging: false,
+};
+
+let mouseEventState = {
+  ...defaultMouseEventState,
+};
+
 //////// Utility functions for fluid sim
 /**
  * This function gets the index of a value speciied by its x and y coordinates
@@ -47,15 +56,24 @@ const halfSquare = gl.canvas.width / (N + 2) / 2;
  */
 const ix = (x, y) => x + (N + 2) * y;
 
-canvas.addEventListener("click", (e) => {
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left; //x position within the element.
-  const y = e.clientY - rect.top; //y position within the element.
-  const hRatio = N / rect.height;
-  const wRatio = N / rect.width;
-  const convertedX = Math.round(x * wRatio);
-  const convertedY = Math.round(y * hRatio);
-  dens[ix(convertedY, convertedX)] = round(Math.random(), 10);
+const updateDensity = (x, y) => {
+  // TODO: Remember to update the projection matrix to fix the irrgularity of puttin y before x
+  dens[ix(y, x)] = round(Math.random(), 10);
+};
+
+canvas.addEventListener("mousedown", () => {
+  mouseEventState = { ...mouseEventState, mouseDown: true };
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (mouseEventState.mouseDown) {
+    mouseEventState = { ...mouseEventState, dragging: true };
+    updateDensity(...getEventLocation(e));
+  }
+});
+
+canvas.addEventListener("mouseup", () => {
+  mouseEventState = { ...defaultMouseEventState };
 });
 
 const vsGLSL = `
