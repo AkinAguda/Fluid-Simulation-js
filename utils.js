@@ -222,7 +222,13 @@ const gaussSeidel1 = (functions, initialValues, iter) => {
   return initialValuesClone;
 };
 
-// This gets the estimate to a certain degree of precision
+/**
+ * This function is used for solving and estimating the
+ * values in set of simultaneous linear equations.
+ *
+ * In our case, we are using it to calculate the ddensity
+ * or anything really of the surrounding squares around a grid square
+ */
 const gaussSeidel = (
   functions,
   initialValues,

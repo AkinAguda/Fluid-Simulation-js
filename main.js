@@ -55,9 +55,7 @@ canvas.addEventListener("click", (e) => {
   const wRatio = N / rect.width;
   const convertedX = Math.round(x * wRatio);
   const convertedY = Math.round(y * hRatio);
-  // console.log(hRatio, wRatio);
-  // console.log(x, y, convertedX, convertedY);
-  dens[ix(convertedX, convertedY)] = 1;
+  dens[ix(convertedY, convertedX)] = round(Math.random(), 10);
 });
 
 const vsGLSL = `
@@ -110,11 +108,12 @@ gl.uniformMatrix3fv(
   m3.projection(gl.canvas.width, gl.canvas.width)
 );
 
+// This function populates the points array withh the coords for each verterx
+// that will be fed to the vertex shader
 const populateVertices = () => {
   let pointIndex = 0;
   for (let i = 0; i < N + 2; i++) {
     for (let j = 0; j < N + 2; j++) {
-      // This is responsible for populating the points array with the correct coords
       const center = [
         halfSquare * 2 * i + halfSquare,
         halfSquare * 2 * j + halfSquare,
