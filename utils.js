@@ -270,5 +270,3 @@ const gaussSeidel = (
   }
   return initialValuesClone.map((v) => round(v, finalPrecision));
 };
-
-// const convertDensityToColor = (density) =>

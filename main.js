@@ -180,22 +180,9 @@ const populateVertices = () => {
   }
 };
 
-const dd = (x, y) => (a, b, c, d) => {
+const calcNextDensity = (x, y) => (a, b, c, d) => {
   const k = dt * diffusion;
   return (currDens[ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
-};
-
-const calcNextDensity = (x, y) => {
-  return dd(
-    x,
-    y
-  )(
-    ...gaussSeidel(
-      [dd(x, y), dd(x - 1, y), dd(x, y + 1), dd(x, y - 1)],
-      [0, 0, 0, 0],
-      1000
-    )
-  );
 };
 
 // Move this function to utils maybe
@@ -203,7 +190,21 @@ const diffuse = () => {
   for (let i = 1; i <= N; i++) {
     for (let j = 1; j <= N; j++) {
       const index = ix(i, j);
-      nextDens[index] = calcNextDensity(i, j);
+      nextDens[index] = calcNextDensity(
+        i,
+        j
+      )(
+        ...gaussSeidel(
+          [
+            calcNextDensity(i + 1, j),
+            calcNextDensity(i - 1, j),
+            calcNextDensity(i, j + 1),
+            calcNextDensity(i, j - 1),
+          ],
+          [0, 0, 0, 0],
+          1000
+        )
+      );
       for (let i = index * 6; i < index * 6 + 6; i++) {
         dneistyPerVertex[i] = nextDens[index];
       }
