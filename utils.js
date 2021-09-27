@@ -270,3 +270,5 @@ const gaussSeidel = (
   }
   return initialValuesClone.map((v) => round(v, finalPrecision));
 };
+
+const lerp = (a, b, k) => a + k * (b - a);

@@ -24,13 +24,13 @@ let dt = 1 / 60 / 2;
 
 const diffusion = 20;
 
-const u = new Float64Array(size); // x component of the velocity of every particle in the fluid
+let u = new Float64Array(size); // x component of the velocity of every particle in the fluid
 
-const v = new Float64Array(size); // y component of the velocity of every particle in the fluid
+let v = new Float64Array(size); // y component of the velocity of every particle in the fluid
 
-const uPrev = new Float64Array(size); // x component of the previous velocity of every particle in the fluid
+let uPrev = new Float64Array(size); // x component of the previous velocity of every particle in the fluid
 
-const vPrev = new Float64Array(size); // y component of the previous velocity of every particle in the fluid
+let vPrev = new Float64Array(size); // y component of the previous velocity of every particle in the fluid
 
 let currDens = new Float32Array(size); // density of every particle in the fluid
 
@@ -63,12 +63,19 @@ const ix = (x, y) => x + (N + 2) * y;
 const updateDensity = (y, x) => {
   // TODO: Remember to update the projection matrix to fix the irrgularity of puttin y before x
   // currDens[ix(x, y)] = round(Math.random(), 10);
+  vPrev[ix[(x, y)]] = 10;
   currDens[ix(x, y)] = 1;
 };
 
-resetButton.addEventListener("click", () => {
+const clear = () => {
   currDens = new Float32Array(size);
   nextDens = new Float32Array(size);
+  vPrev = new Float32Array(size);
+  v = new Float32Array(size);
+};
+
+resetButton.addEventListener("click", () => {
+  clear();
 });
 
 canvas.addEventListener("mousedown", () => {
@@ -185,37 +192,72 @@ const calcNextDensity = (x, y) => (a, b, c, d) => {
   return (currDens[ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
 };
 
+const diffuse = (i, j) =>
+  calcNextDensity(
+    i,
+    j
+  )(
+    ...gaussSeidel(
+      [
+        calcNextDensity(i + 1, j),
+        calcNextDensity(i - 1, j),
+        calcNextDensity(i, j + 1),
+        calcNextDensity(i, j - 1),
+      ],
+      [0, 0, 0, 0],
+      1000
+    )
+  );
+
+const advectDensity = (x, y, qty) => {
+  // This will give the new point (this formula is form the normal Delta position divided by Delta time equals velocity)
+  const k = dt * diffusion;
+  const initialPosX = x - vPrev[ix(x, y)] * dt;
+  const initialPosY = y - vPrev[ix(x, y)] * dt;
+
+  const imaginaryX = round(initialPosX % 1, 10);
+  const imaginaryY = round(initialPosY % 1, 10);
+
+  const point1 = [Math.floor(initialPosX), Math.floor(initialPosY)];
+  const point2 = [Math.ceil(initialPosX), Math.floor(initialPosY)];
+  const point3 = [Math.floor(initialPosX), Math.ceil(initialPosY)];
+  const point4 = [Math.ceil(initialPosX), Math.ceil(initialPosY)];
+
+  // To find the closest point to that, we need to floor it
+  // const closestX = Math.floor(initialPosX);
+  // const closestY = Math.floor(initialPosY);
+
+  const updatedQty = lerp(
+    lerp(qty[ix(...point1)], qty[ix(...point2)], k),
+    lerp(qty[ix(...point3)], qty[ix(...point4)], k),
+    k
+  );
+
+  return updatedQty;
+};
+
 // Move this function to utils maybe
-const diffuse = () => {
+const performDensityOperations = () => {
   for (let i = 1; i <= N; i++) {
     for (let j = 1; j <= N; j++) {
       const index = ix(i, j);
-      nextDens[index] = calcNextDensity(
-        i,
-        j
-      )(
-        ...gaussSeidel(
-          [
-            calcNextDensity(i + 1, j),
-            calcNextDensity(i - 1, j),
-            calcNextDensity(i, j + 1),
-            calcNextDensity(i, j - 1),
-          ],
-          [0, 0, 0, 0],
-          1000
-        )
-      );
+      const densityAfterDiffusion = diffuse(i, j);
+      nextDens[index] = densityAfterDiffusion;
+      nextDens[index] = advectDensity(i, j, nextDens);
+
       for (let i = index * 6; i < index * 6 + 6; i++) {
         dneistyPerVertex[i] = nextDens[index];
       }
     }
   }
+};
+
+const updateFluid = () => {
+  performDensityOperations();
   currDens = nextDens;
 };
 
-const drawGrid = () => {
-  diffuse();
-
+const drawFluid = () => {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
 
@@ -233,6 +275,11 @@ const drawGrid = () => {
   gl.drawArrays(gl.TRIANGLES, 0, 6 * size);
 };
 
+const render = () => {
+  updateFluid();
+  drawFluid();
+};
+
 let then = 0;
 const draw = (now) => {
   now *= 0.001;
@@ -240,7 +287,7 @@ const draw = (now) => {
   dt = now - then;
   // Remember the current time for the next frame.
   then = now;
-  drawGrid();
+  render();
   requestAnimationFrame(draw);
 };
 
