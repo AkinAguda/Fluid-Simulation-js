@@ -215,7 +215,7 @@ const advectDensity = (x, y, qty) => {
   const initialPosY = y - vPrev[ix(x, y)] * dt;
 
   const imaginaryX = round(initialPosX % 1, 10);
-  // const imaginaryY = round(initialPosY % 1, 10);
+  const imaginaryY = round(initialPosY % 1, 10);
 
   const point1 = [Math.floor(initialPosX), Math.floor(initialPosY)]; // top left
   const point2 = [Math.ceil(initialPosX), Math.floor(initialPosY)]; // top right
@@ -229,7 +229,7 @@ const advectDensity = (x, y, qty) => {
   const updatedQty = lerp(
     lerp(qty[ix(...point1)], qty[ix(...point2)], imaginaryX),
     lerp(qty[ix(...point3)], qty[ix(...point4)], imaginaryX),
-    k
+    imaginaryY
   );
 
   return updatedQty;
