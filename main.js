@@ -63,7 +63,6 @@ const ix = (x, y) => x + (N + 2) * y;
 const updateDensity = (y, x) => {
   // TODO: Remember to update the projection matrix to fix the irrgularity of puttin y before x
   // currDens[ix(x, y)] = round(Math.random(), 10);
-  vPrev[ix[(x, y)]] = 10;
   currDens[ix(x, y)] = 1;
 };
 
@@ -216,20 +215,20 @@ const advectDensity = (x, y, qty) => {
   const initialPosY = y - vPrev[ix(x, y)] * dt;
 
   const imaginaryX = round(initialPosX % 1, 10);
-  const imaginaryY = round(initialPosY % 1, 10);
+  // const imaginaryY = round(initialPosY % 1, 10);
 
-  const point1 = [Math.floor(initialPosX), Math.floor(initialPosY)];
-  const point2 = [Math.ceil(initialPosX), Math.floor(initialPosY)];
-  const point3 = [Math.floor(initialPosX), Math.ceil(initialPosY)];
-  const point4 = [Math.ceil(initialPosX), Math.ceil(initialPosY)];
+  const point1 = [Math.floor(initialPosX), Math.floor(initialPosY)]; // top left
+  const point2 = [Math.ceil(initialPosX), Math.floor(initialPosY)]; // top right
+  const point3 = [Math.floor(initialPosX), Math.ceil(initialPosY)]; // bottom left
+  const point4 = [Math.ceil(initialPosX), Math.ceil(initialPosY)]; // bottom right
 
   // To find the closest point to that, we need to floor it
   // const closestX = Math.floor(initialPosX);
   // const closestY = Math.floor(initialPosY);
 
   const updatedQty = lerp(
-    lerp(qty[ix(...point1)], qty[ix(...point2)], k),
-    lerp(qty[ix(...point3)], qty[ix(...point4)], k),
+    lerp(qty[ix(...point1)], qty[ix(...point2)], imaginaryX),
+    lerp(qty[ix(...point3)], qty[ix(...point4)], imaginaryX),
     k
   );
 
