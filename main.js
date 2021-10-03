@@ -318,6 +318,7 @@ const densityStep = () => {
   diffusionStep(nextDens, currDens);
   currDens = nextDens;
   advectionStep(nextDens, currDens);
+  currDens = nextDens;
 };
 
 const updateFluid = () => {
