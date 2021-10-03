@@ -270,16 +270,16 @@ const advectProperty = (x, y, property) => {
   return updatedProperty;
 };
 
-const swap = (arr1, arr2) => {
-  const temp = arr1;
-  arr1 = arr2;
-  arr2 = temp;
-};
+// const swap = (arr1, arr2) => {
+//   // const temp = arr1;
+//   // arr1 = arr2;
+//   // arr2 = temp;
+//   // arr1 = arr2;
+// };
 
 const addSource = (x, s) => {
   for (let i = 0; i < size; i++) {
     x[i] += dt * s[i];
-    // x[i] = s[i];
   }
 };
 
@@ -290,9 +290,6 @@ const diffusionStep = (next, curr) => {
       next[index] = diffuse(i, j, curr);
     }
   }
-  // densityAfterDiffusion = diffuse(i, j, currDens);
-  // nextDens[index] = densityAfterDiffusion;
-  // nextDens[index] = advectProperty(i, j, nextDens);
 };
 
 const advectionStep = (next, curr) => {
@@ -309,25 +306,22 @@ const getVerticesFromDensity = () => {
     for (let j = 1; j <= N; j++) {
       const index = ix(i, j);
       for (let i = index * 6; i < index * 6 + 6; i++) {
-        // if (nextDens[index] !== 0) {
-        //   console.log(nextDens[index]);
-        // }
         dneistyPerVertex[i] = nextDens[index];
       }
     }
   }
 };
 
-const updateFluid = () => {
+const densityStep = () => {
   addSource(nextDens, currDens);
-  swap(currDens, nextDens);
+  currDens = nextDens;
   diffusionStep(nextDens, currDens);
-  swap(currDens, nextDens);
-  // advectionStep(nextDens, currDens);
+  currDens = nextDens;
+  advectionStep(nextDens, currDens);
+};
 
-  // currVelX = nextVelX;
-  // currVelY = nextVelY;
-  // currDens = nextDens;
+const updateFluid = () => {
+  densityStep();
 };
 
 const drawFluid = () => {
