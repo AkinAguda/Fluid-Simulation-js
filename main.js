@@ -20,13 +20,14 @@ const N = 64;
 
 const size = Math.pow(N + 2, 2);
 
-let dt = 1 / 60 / 2;
+// let dt = 1 / 60 / 2;
+let dt = 0.1;
 
 const diffusion = 20;
 
 let mode = "density";
 
-const dispenseBoth = false;
+const dispenseBoth = true;
 
 let currVelX = new Float64Array(size); // x component of the velocity of every particle in the fluid
 
@@ -232,7 +233,7 @@ const diffuse = (i, j, property) =>
     j,
     property
   )(
-    ...gaussSeidel(
+    ...gaussSeidel1(
       [
         calcNextValueOfProperty(i + 1, j, property),
         calcNextValueOfProperty(i - 1, j, property),
@@ -240,7 +241,7 @@ const diffuse = (i, j, property) =>
         calcNextValueOfProperty(i, j - 1, property),
       ],
       [0, 0, 0, 0],
-      1000
+      10
     )
   );
 
@@ -321,7 +322,19 @@ const densityStep = () => {
   currDens = nextDens;
 };
 
+const velocityStep = () => {
+  addSource(nextVelX, currVelX);
+  addSource(nextVelY, currVelY);
+
+  currVelX = nextVelX;
+  diffusionStep(nextVelX, currVelX);
+
+  currVelY = nextVelY;
+  diffusionStep(nextVelY, currVelY);
+};
+
 const updateFluid = () => {
+  velocityStep();
   densityStep();
 };
 
@@ -367,6 +380,6 @@ const start = () => {
 
 start();
 
-setInterval(() => {
-  console.log(nextDens);
-}, 3000);
+// setInterval(() => {
+//   console.log(nextDens);
+// }, 3000);
