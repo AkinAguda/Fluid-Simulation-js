@@ -24,17 +24,21 @@ let dt = 1 / 60 / 2;
 
 const diffusion = 20;
 
-let u = new Float64Array(size); // x component of the velocity of every particle in the fluid
+let mode = "density";
 
-let v = new Float64Array(size); // y component of the velocity of every particle in the fluid
+const dispenseBoth = false;
 
-let uPrev = new Float64Array(size); // x component of the previous velocity of every particle in the fluid
+let currVelX = new Float64Array(size); // x component of the velocity of every particle in the fluid
 
-let vPrev = new Float64Array(size); // y component of the previous velocity of every particle in the fluid
+let nextVelX = new Float64Array(size); // x component of the next velocity of every particle in the fluid
+
+let currVelY = new Float64Array(size); // y component of the velocity of every particle in the fluid
+
+let nextVelY = new Float64Array(size); // y component of the next velocity of every particle in the fluid
 
 let currDens = new Float32Array(size); // density of every particle in the fluid
 
-let nextDens = new Float64Array(size); // previous density of every particle in the fluid
+let nextDens = new Float64Array(size); // next density of every particle in the fluid
 
 const dneistyPerVertex = new Float32Array(size * 6); // This stores the colors that will be passed as a varying to the fragment shader
 
@@ -51,6 +55,19 @@ let mouseEventState = {
   ...defaultMouseEventState,
 };
 
+const modeToggler = document.getElementById("mode");
+
+modeToggler.innerHTML = mode;
+
+modeToggler.addEventListener("click", () => {
+  if (mode === "velocity") {
+    mode = "density";
+  } else {
+    mode = "velocity";
+  }
+  modeToggler.innerHTML = mode;
+});
+
 //////// Utility functions for fluid sim
 /**
  * This function gets the index of a value speciied by its x and y coordinates
@@ -62,8 +79,13 @@ const ix = (x, y) => x + (N + 2) * y;
 
 const updateDensity = (y, x) => {
   // TODO: Remember to update the projection matrix to fix the irrgularity of puttin y before x
-  // currDens[ix(x, y)] = round(Math.random(), 10);
   currDens[ix(x, y)] = 1;
+};
+
+const updateVelocity = (y, x) => {
+  // TODO: Remember to update the projection matrix to fix the irrgularity of puttin y before x
+  currVelX[ix(x, y)] = 10;
+  currVelY[ix(x, y)] = 10;
 };
 
 const clear = () => {
@@ -71,6 +93,19 @@ const clear = () => {
   nextDens = new Float32Array(size);
   vPrev = new Float32Array(size);
   v = new Float32Array(size);
+};
+
+const handleEvent = (x, y) => {
+  if (dispenseBoth) {
+    updateVelocity(x, y);
+    updateDensity(x, y);
+  } else {
+    if (mode === "velocity") {
+      updateVelocity(x, y);
+    } else {
+      updateDensity(x, y);
+    }
+  }
 };
 
 resetButton.addEventListener("click", () => {
@@ -84,12 +119,12 @@ canvas.addEventListener("mousedown", () => {
 canvas.addEventListener("mousemove", (e) => {
   if (mouseEventState.mouseDown) {
     mouseEventState = { ...mouseEventState, dragging: true };
-    updateDensity(...getEventLocation(e));
+    handleEvent(...getEventLocation(e));
   }
 });
 
 canvas.addEventListener("click", (e) => {
-  updateDensity(...getEventLocation(e));
+  handleEvent(...getEventLocation(e));
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -186,33 +221,33 @@ const populateVertices = () => {
   }
 };
 
-const calcNextDensity = (x, y) => (a, b, c, d) => {
+const calcNextValueOfProperty = (x, y, property) => (a, b, c, d) => {
   const k = dt * diffusion;
-  return (currDens[ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
+  return (property[ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
 };
 
-const diffuse = (i, j) =>
-  calcNextDensity(
+const diffuse = (i, j, property) =>
+  calcNextValueOfProperty(
     i,
-    j
+    j,
+    property
   )(
     ...gaussSeidel(
       [
-        calcNextDensity(i + 1, j),
-        calcNextDensity(i - 1, j),
-        calcNextDensity(i, j + 1),
-        calcNextDensity(i, j - 1),
+        calcNextValueOfProperty(i + 1, j, property),
+        calcNextValueOfProperty(i - 1, j, property),
+        calcNextValueOfProperty(i, j + 1, property),
+        calcNextValueOfProperty(i, j - 1, property),
       ],
       [0, 0, 0, 0],
       1000
     )
   );
 
-const advectDensity = (x, y, qty) => {
+const advectProperty = (x, y, property) => {
   // This will give the new point (this formula is form the normal Delta position divided by Delta time equals velocity)
-  const k = dt * diffusion;
-  const initialPosX = x - vPrev[ix(x, y)] * dt;
-  const initialPosY = y - vPrev[ix(x, y)] * dt;
+  const initialPosX = x - currVelX[ix(x, y)] * dt;
+  const initialPosY = y - currVelY[ix(x, y)] * dt;
 
   const imaginaryX = round(initialPosX % 1, 10);
   const imaginaryY = round(initialPosY % 1, 10);
@@ -226,25 +261,57 @@ const advectDensity = (x, y, qty) => {
   // const closestX = Math.floor(initialPosX);
   // const closestY = Math.floor(initialPosY);
 
-  const updatedQty = lerp(
-    lerp(qty[ix(...point1)], qty[ix(...point2)], imaginaryX),
-    lerp(qty[ix(...point3)], qty[ix(...point4)], imaginaryX),
+  const updatedProperty = lerp(
+    lerp(property[ix(...point1)], property[ix(...point2)], imaginaryX),
+    lerp(property[ix(...point3)], property[ix(...point4)], imaginaryX),
     imaginaryY
   );
 
-  return updatedQty;
+  return updatedProperty;
 };
 
-// Move this function to utils maybe
-const performDensityOperations = () => {
+const swap = (arr1, arr2) => {
+  const temp = arr1;
+  arr1 = arr2;
+  arr2 = temp;
+};
+
+const addSource = (x, s) => {
+  for (let i = 0; i < size; i++) {
+    x[i] += dt * s[i];
+    // x[i] = s[i];
+  }
+};
+
+const diffusionStep = (next, curr) => {
   for (let i = 1; i <= N; i++) {
     for (let j = 1; j <= N; j++) {
       const index = ix(i, j);
-      const densityAfterDiffusion = diffuse(i, j);
-      nextDens[index] = densityAfterDiffusion;
-      nextDens[index] = advectDensity(i, j, nextDens);
+      next[index] = diffuse(i, j, curr);
+    }
+  }
+  // densityAfterDiffusion = diffuse(i, j, currDens);
+  // nextDens[index] = densityAfterDiffusion;
+  // nextDens[index] = advectProperty(i, j, nextDens);
+};
 
+const advectionStep = (next, curr) => {
+  for (let i = 1; i <= N; i++) {
+    for (let j = 1; j <= N; j++) {
+      const index = ix(i, j);
+      next[index] = advectProperty(i, j, curr);
+    }
+  }
+};
+
+const getVerticesFromDensity = () => {
+  for (let i = 1; i <= N; i++) {
+    for (let j = 1; j <= N; j++) {
+      const index = ix(i, j);
       for (let i = index * 6; i < index * 6 + 6; i++) {
+        // if (nextDens[index] !== 0) {
+        //   console.log(nextDens[index]);
+        // }
         dneistyPerVertex[i] = nextDens[index];
       }
     }
@@ -252,11 +319,19 @@ const performDensityOperations = () => {
 };
 
 const updateFluid = () => {
-  performDensityOperations();
-  currDens = nextDens;
+  addSource(nextDens, currDens);
+  swap(currDens, nextDens);
+  diffusionStep(nextDens, currDens);
+  swap(currDens, nextDens);
+  // advectionStep(nextDens, currDens);
+
+  // currVelX = nextVelX;
+  // currVelY = nextVelY;
+  // currDens = nextDens;
 };
 
 const drawFluid = () => {
+  getVerticesFromDensity();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
 
@@ -282,7 +357,7 @@ const render = () => {
 let then = 0;
 const draw = (now) => {
   now *= 0.001;
-  // Subtract the previous time from the current time
+  // Subtract the next time from the current time
   dt = now - then;
   // Remember the current time for the next frame.
   then = now;
@@ -296,3 +371,7 @@ const start = () => {
 };
 
 start();
+
+setInterval(() => {
+  console.log(nextDens);
+}, 3000);
