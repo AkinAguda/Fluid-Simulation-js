@@ -16,7 +16,7 @@ gl.clear(gl.COLOR_BUFFER_BIT);
 
 // this is assuming width and height are same dimensions
 
-const N = 64;
+const N = 150;
 
 const size = Math.pow(N + 2, 2);
 
