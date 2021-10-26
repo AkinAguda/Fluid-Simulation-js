@@ -5,6 +5,8 @@ import {
   m3,
   resizeCanvasToDisplaySize,
   getEventLocation,
+  round,
+  getMultipliers,
 } from "./utils";
 
 export default class Renderer {
@@ -86,53 +88,78 @@ export default class Renderer {
     this.initializeWebGL();
   }
 
-  addV(x: number, y: number) {
-    let amtX = y - Math.abs(this.mouseEventState.pos.x);
-    let amtY = x - Math.abs(this.mouseEventState.pos.y);
-    this.fluid.addVelocity(
-      this.fluid.ix(y, x),
-      Math.random() * 1000,
-      Math.random() * 1000
+  addV(y: number, x: number, e: MouseEvent) {
+    // let amtX = x - Math.abs(this.mouseEventState.pos.x);
+    // let amtY = y - Math.abs(this.mouseEventState.pos.y);
+
+    // console.log(x, y);
+
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const eventY = e.clientX - rect.left; //x position within the element.
+    const eventX = e.clientY - rect.top; //y position within the element.
+    let prevPos = this.mouseEventState.pos;
+    const [multiX, multiY] = getMultipliers(
+      prevPos.x,
+      prevPos.y,
+      eventX,
+      eventY
     );
+    this.fluid.addVelocity(
+      this.fluid.ix(x, y),
+      Math.random() * 1000 * multiX,
+      Math.random() * 1000 * multiY
+    );
+    this.storeEventLocation(e);
   }
 
-  addD(x: number, y: number) {
+  addD(y: number, x: number) {
     this.fluid.addDensity(
-      this.fluid.ix(y, x),
+      this.fluid.ix(x, y),
       Math.floor(Math.random() * (5 - 1 + 1)) + 1
     );
   }
 
-  handleEvent = (x: number, y: number) => {
+  storeEventLocation(e: MouseEvent) {
+    // UPDATE THIS
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const x = e.clientX - rect.left; //x position within the element.
+    const y = e.clientY - rect.top; //y position within the element.
+    this.mouseEventState.pos = {
+      x: y,
+      y: x,
+    };
+  }
+
+  handleEvent = (x: number, y: number, e: MouseEvent) => {
     if (this.mode === 0) {
-      this.addV(x, y);
+      this.addV(x, y, e);
       this.addD(x, y);
     } else if (this.mode === 1) {
-      this.addV(x, y);
+      this.addV(x, y, e);
     } else if (this.mode === 2) {
       this.addD(x, y);
     }
 
-    this.mouseEventState.pos.x = y;
-    this.mouseEventState.pos.y = x;
+    // this.mouseEventState.pos.x = y;
+    // this.mouseEventState.pos.y = x;
     // this.fluid.simulate();
   };
 
   addEventHandlers() {
     const n = this.fluid.config.n;
-    this.canvas.addEventListener("mousedown", () => {
+    this.canvas.addEventListener("mousedown", (e) => {
       this.mouseEventState = { ...this.mouseEventState, mouseDown: true };
     });
 
     this.canvas.addEventListener("mousemove", (e) => {
       if (this.mouseEventState.mouseDown) {
         this.mouseEventState = { ...this.mouseEventState, dragging: true };
-        this.handleEvent(...getEventLocation(e, n));
+        this.handleEvent(...getEventLocation(e, n), e);
       }
     });
 
     this.canvas.addEventListener("click", (e) => {
-      this.handleEvent(...getEventLocation(e, n));
+      this.handleEvent(...getEventLocation(e, n), e);
     });
 
     this.canvas.addEventListener("mouseup", () => {

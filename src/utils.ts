@@ -1,3 +1,5 @@
+import * as exp from "constants";
+
 export const getEventLocation = (
   e: MouseEvent,
   n: number
@@ -132,3 +134,26 @@ export const round = (number: number, precision: number) =>
   Math.round((number + Number.EPSILON) * precision) / precision;
 
 export const lerp = (a: number, b: number, k: number) => a + k * (b - a);
+
+export const getMultipliers = (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+): [number, number] => {
+  let x = 0;
+  let y = 0;
+  if (x2 - x1 > 0) {
+    x = 1;
+  }
+  if (x2 - x1 < 0) {
+    x = -1;
+  }
+  if (y2 - y1 > 0) {
+    y = 1;
+  }
+  if (y2 - y1 < 0) {
+    y = -1;
+  }
+  return [x, y];
+};
