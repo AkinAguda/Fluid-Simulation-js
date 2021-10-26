@@ -16,6 +16,8 @@ export class Fluid {
   private densitySource: Float32Array;
   private velocityXSource: Float32Array;
   private velocityYSource: Float32Array;
+  private divergenceValues: Float32Array;
+  private poissonValues: Float32Array;
 
   constructor(public config: FluidConfig) {
     this.size = Math.pow(config.n + 2, 2);
@@ -28,6 +30,8 @@ export class Fluid {
     this.densitySource = new Float32Array(this.size);
     this.velocityXSource = new Float32Array(this.size);
     this.velocityYSource = new Float32Array(this.size);
+    this.divergenceValues = new Float32Array(this.size);
+    this.poissonValues = new Float32Array(this.size);
   }
 
   ix = (x: number, y: number): number => {
@@ -70,6 +74,39 @@ export class Fluid {
       const k = this.config.dt * this.config.diffusion;
       return (property[this.ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
     };
+  };
+
+  private calcNextValueOfPoisson = (
+    x: number,
+    y: number,
+    property: Float32Array
+  ) => {
+    return (a: number, b: number, c: number, d: number) => {
+      return (a + b + c + d - property[this.ix(x, y)]) / 4;
+    };
+  };
+
+  private calcPoissonValues = (
+    i: number,
+    j: number,
+    property: Float32Array
+  ) => {
+    let results = gaussSeidel1(
+      [
+        this.calcNextValueOfPoisson(i - 1, j, property),
+        this.calcNextValueOfPoisson(i + 1, j, property),
+        this.calcNextValueOfPoisson(i, j - 1, property),
+        this.calcNextValueOfPoisson(i, j + 1, property),
+      ],
+      [0, 0, 0, 0],
+      10
+    );
+    return this.calcNextValueOfPoisson(i, j, property)(
+      results[0],
+      results[1],
+      results[2],
+      results[3]
+    );
   };
 
   private diffuse = (i: number, j: number, property: Float32Array) => {
@@ -149,6 +186,48 @@ export class Fluid {
     }
   };
 
+  private divergence(x: number, y: number) {
+    return (
+      0.5 *
+      (this.currVelX[this.ix(x + 1, y)] -
+        this.currVelX[this.ix(x - 1, y)] +
+        (this.currVelX[this.ix(x, y + 1)] - this.currVelX[this.ix(x, y - 1)]))
+    );
+  }
+
+  private projectionStep() {
+    for (let i = 1; i <= this.config.n; i++) {
+      for (let j = 1; j <= this.config.n; j++) {
+        this.divergenceValues[this.ix(i, j)] = this.divergence(i, j);
+        this.poissonValues[this.ix(i, j)] = 0.0;
+      }
+    }
+
+    for (let i = 1; i <= this.config.n; i++) {
+      for (let j = 1; j <= this.config.n; j++) {
+        this.poissonValues[this.ix(i, j)] = this.calcPoissonValues(
+          i,
+          j,
+          this.poissonValues
+        );
+      }
+    }
+
+    for (let i = 1; i <= this.config.n; i++) {
+      for (let j = 1; j <= this.config.n; j++) {
+        let index = this.ix(i, j);
+        this.currVelX[index] -=
+          (this.poissonValues[this.ix(i + 1, j)] -
+            this.poissonValues[this.ix(i - 1, j)]) *
+          0.5;
+        this.currVelY[index] -=
+          (this.poissonValues[this.ix(i, j + 1)] -
+            this.poissonValues[this.ix(i, j - 1)]) *
+          0.5;
+      }
+    }
+  }
+
   private addSource = (property: Float32Array, source: Float32Array) => {
     for (let i = 0; i < this.size; i++) {
       property[i] += this.config.dt * source[i];
@@ -184,6 +263,8 @@ export class Fluid {
     this.prevVelY = this.currVelY;
     this.currVelY = temp;
 
+    this.projectionStep();
+
     this.advectionStep(this.prevVelX, this.currVelX);
 
     temp = this.prevVelX;
@@ -195,5 +276,7 @@ export class Fluid {
     temp = this.prevVelY;
     this.prevVelY = this.currVelY;
     this.currVelY = temp;
+
+    this.projectionStep();
   }
 }
