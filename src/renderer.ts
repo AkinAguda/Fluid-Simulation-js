@@ -18,8 +18,6 @@ export default class Renderer {
   private vertices: Float32Array;
   private fluid: Fluid;
   private densityPerVertex: Float32Array;
-  private velocityPerVertex: Float32Array;
-  private then = 0;
   private defaultMouseEventState = {
     mouseDown: false,
     dragging: false,
@@ -339,11 +337,6 @@ export default class Renderer {
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6 * size);
   }
   private draw(now: number) {
-    now *= 0.001;
-    // Subtract the next time from the current time
-    // this.fluid.set_dt(now - this.then);
-    // Remember the current time for the next frame.
-    this.then = now;
     this.render();
     requestAnimationFrame(this.draw.bind(this));
   }
