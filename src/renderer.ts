@@ -5,7 +5,7 @@ import {
   m3,
   resizeCanvasToDisplaySize,
   getEventLocation,
-  round,
+  random,
   getMultipliers,
 } from "./utils";
 
@@ -113,10 +113,7 @@ export default class Renderer {
   }
 
   addD(y: number, x: number) {
-    this.fluid.addDensity(
-      this.fluid.ix(x, y),
-      Math.floor(Math.random() * (5 - 1 + 1)) + 1
-    );
+    this.fluid.addDensity(this.fluid.ix(x, y), random(5, 10));
   }
 
   storeEventLocation(e: MouseEvent) {
@@ -190,7 +187,7 @@ export default class Renderer {
     varying float v_density;
   
     void main() {
-      gl_FragColor = vec4(v_density * 0.2, v_density * 0.1, v_density * 0.5, 1);
+      gl_FragColor = vec4(v_density, v_density, v_density, 1);
     }
   `;
 
@@ -283,7 +280,7 @@ export default class Renderer {
         //   console.log(vx, vy);
         // }
         for (let i = index * 6; i < index * 6 + 6; i++) {
-          this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index) * 100;
+          this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index) * 30;
         }
       }
     }
