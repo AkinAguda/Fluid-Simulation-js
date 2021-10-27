@@ -36,6 +36,10 @@ export class Fluid {
   }
 
   ix = (x: number, y: number): number => {
+    x = Math.min(x, this.config.n + 1);
+    x = Math.max(x, 0);
+    y = Math.min(y, this.config.n + 1);
+    y = Math.max(y, 0);
     return x + (this.config.n + 2) * y;
   };
 

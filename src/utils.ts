@@ -1,5 +1,3 @@
-import * as exp from "constants";
-
 export const getEventLocation = (
   e: MouseEvent,
   n: number
