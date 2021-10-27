@@ -1,0 +1,1 @@
+export const GAUSS_SEIDEL_TERATIONS = 10;

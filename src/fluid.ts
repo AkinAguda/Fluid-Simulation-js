@@ -1,4 +1,5 @@
 import { gaussSeidel1, round, lerp } from "./utils";
+import { GAUSS_SEIDEL_TERATIONS } from "./constants";
 
 export class FluidConfig {
   constructor(public n: number, public diffusion: number, public dt: number) {}
@@ -99,7 +100,7 @@ export class Fluid {
         this.calcNextValueOfPoisson(i, j + 1, property),
       ],
       [0, 0, 0, 0],
-      10
+      GAUSS_SEIDEL_TERATIONS
     );
     return this.calcNextValueOfPoisson(i, j, property)(
       results[0],
@@ -118,7 +119,7 @@ export class Fluid {
         this.calcNextValueOfProperty(i, j - 1, property),
       ],
       [0, 0, 0, 0],
-      10
+      GAUSS_SEIDEL_TERATIONS
     );
     return this.calcNextValueOfProperty(i, j, property)(
       results[0],
@@ -139,7 +140,7 @@ export class Fluid {
     //   }
     // }
     const k = this.config.dt * this.config.diffusion;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
       for (let i = 1; i <= this.config.n; i++) {
         for (let j = 1; j <= this.config.n; j++) {
           const index = this.ix(i, j);
@@ -220,13 +221,26 @@ export class Fluid {
       }
     }
 
-    for (let i = 1; i <= this.config.n; i++) {
-      for (let j = 1; j <= this.config.n; j++) {
-        this.poissonValues[this.ix(i, j)] = this.calcPoissonValues(
-          i,
-          j,
-          this.poissonValues
-        );
+    // for (let i = 1; i <= this.config.n; i++) {
+    //   for (let j = 1; j <= this.config.n; j++) {
+    //     this.poissonValues[this.ix(i, j)] = this.calcPoissonValues(
+    //       i,
+    //       j,
+    //       this.poissonValues
+    //     );
+    //   }
+    // }
+    for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
+      for (let i = 1; i <= this.config.n; i++) {
+        for (let j = 1; j <= this.config.n; j++) {
+          this.poissonValues[this.ix(i, j)] =
+            (this.poissonValues[this.ix(i - 1, j)] +
+              this.poissonValues[this.ix(i + 1, j)] +
+              this.poissonValues[this.ix(i, j - 1)] +
+              this.poissonValues[this.ix(i, j + 1)] -
+              this.divergenceValues[this.ix(i, j)]) /
+            4;
+        }
       }
     }
 
