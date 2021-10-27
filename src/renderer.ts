@@ -278,7 +278,7 @@ export default class Renderer {
         //   console.log(vx, vy);
         // }
         for (let i = index * 6; i < index * 6 + 6; i++) {
-          this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index) * 30;
+          this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index) * 5;
         }
       }
     }
