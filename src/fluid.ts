@@ -65,80 +65,10 @@ export class Fluid {
     return this.currVelX;
   }
 
-  // remove any from return type
-  private calcNextValueOfProperty = (
-    x: number,
-    y: number,
-    property: Float32Array
-  ) => {
-    return (a: number, b: number, c: number, d: number) => {
-      const k = this.config.dt * this.config.diffusion;
-      return (property[this.ix(x, y)] + (k * (a + b + c + d)) / 4) / (1 + k);
-    };
-  };
-
-  private calcNextValueOfPoisson = (
-    x: number,
-    y: number,
-    property: Float32Array
-  ) => {
-    return (a: number, b: number, c: number, d: number) => {
-      return (a + b + c + d - property[this.ix(x, y)]) / 4;
-    };
-  };
-
-  private calcPoissonValues = (
-    i: number,
-    j: number,
-    property: Float32Array
-  ) => {
-    let results = gaussSeidel1(
-      [
-        this.calcNextValueOfPoisson(i - 1, j, property),
-        this.calcNextValueOfPoisson(i + 1, j, property),
-        this.calcNextValueOfPoisson(i, j - 1, property),
-        this.calcNextValueOfPoisson(i, j + 1, property),
-      ],
-      [0, 0, 0, 0],
-      GAUSS_SEIDEL_TERATIONS
-    );
-    return this.calcNextValueOfPoisson(i, j, property)(
-      results[0],
-      results[1],
-      results[2],
-      results[3]
-    );
-  };
-
-  private diffuse = (i: number, j: number, property: Float32Array) => {
-    let results = gaussSeidel1(
-      [
-        this.calcNextValueOfProperty(i + 1, j, property),
-        this.calcNextValueOfProperty(i - 1, j, property),
-        this.calcNextValueOfProperty(i, j + 1, property),
-        this.calcNextValueOfProperty(i, j - 1, property),
-      ],
-      [0, 0, 0, 0],
-      GAUSS_SEIDEL_TERATIONS
-    );
-    return this.calcNextValueOfProperty(i, j, property)(
-      results[0],
-      results[1],
-      results[2],
-      results[3]
-    );
-  };
-
   private diffusionStep(
     prevProperty: Float32Array,
     currProperty: Float32Array
   ) {
-    // for (let i = 1; i <= this.config.n; i++) {
-    //   for (let j = 1; j <= this.config.n; j++) {
-    //     const index = this.ix(i, j);
-    //     currProperty[index] = this.diffuse(i, j, prevProperty);
-    //   }
-    // }
     const k = this.config.dt * this.config.diffusion;
     for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
       for (let i = 1; i <= this.config.n; i++) {
@@ -170,10 +100,6 @@ export class Fluid {
     const point2 = [Math.ceil(initialPosX), Math.floor(initialPosY)]; // top right
     const point3 = [Math.floor(initialPosX), Math.ceil(initialPosY)]; // bottom left
     const point4 = [Math.ceil(initialPosX), Math.ceil(initialPosY)]; // bottom right
-
-    // To find the closest point to that, we need to floor it
-    // const closestX = Math.floor(initialPosX);
-    // const closestY = Math.floor(initialPosY);
 
     const updatedProperty = lerp(
       lerp(
@@ -221,15 +147,6 @@ export class Fluid {
       }
     }
 
-    // for (let i = 1; i <= this.config.n; i++) {
-    //   for (let j = 1; j <= this.config.n; j++) {
-    //     this.poissonValues[this.ix(i, j)] = this.calcPoissonValues(
-    //       i,
-    //       j,
-    //       this.poissonValues
-    //     );
-    //   }
-    // }
     for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
       for (let i = 1; i <= this.config.n; i++) {
         for (let j = 1; j <= this.config.n; j++) {
