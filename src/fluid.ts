@@ -67,7 +67,8 @@ export class Fluid {
 
   private diffusionStep(
     prevProperty: Float32Array,
-    currProperty: Float32Array
+    currProperty: Float32Array,
+    b: number
   ) {
     const k = this.config.dt * this.config.diffusion;
     for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
@@ -85,8 +86,33 @@ export class Fluid {
             (1 + k);
         }
       }
+      this.setBoundaryCondition(b, currProperty);
     }
   }
+
+  private setBoundaryCondition = (b: number, property: Float32Array) => {
+    const n = this.config.n;
+
+    for (let i = 0; i <= n; i++) {
+      property[this.ix(0, i)] =
+        b === 1 ? -property[this.ix(1, i)] : property[this.ix(1, i)];
+      property[this.ix(n + 1, i)] =
+        b === 1 ? -property[this.ix(n, i)] : property[this.ix(n, i)];
+      property[this.ix(i, 0)] =
+        b === 2 ? -property[this.ix(i, 1)] : property[this.ix(i, 1)];
+      property[this.ix(i, n + 1)] =
+        b === 2 ? -property[this.ix(i, n)] : property[this.ix(i, n)];
+    }
+
+    property[this.ix(0, 0)] =
+      0.5 * (property[this.ix(1, 0)] + property[this.ix(0, 1)]);
+    property[this.ix(0, n + 1)] =
+      0.5 * (property[this.ix(1, n + 1)] + property[this.ix(0, n)]);
+    property[this.ix(n + 1, 0)] =
+      0.5 * (property[this.ix(n, 0)] + property[this.ix(n + 1, 1)]);
+    property[this.ix(n + 1, n + 1)] =
+      0.5 * (property[this.ix(n, n + 1)] + property[this.ix(n + 1, n)]);
+  };
 
   private advectProperty = (x: number, y: number, property: Float32Array) => {
     // This will give the new point (this formula is form the normal Delta position divided by Delta time equals velocity)
@@ -120,7 +146,8 @@ export class Fluid {
 
   private advectionStep = (
     prevProperty: Float32Array,
-    currProperty: Float32Array
+    currProperty: Float32Array,
+    b: number
   ) => {
     for (let i = 1; i <= this.config.n; i++) {
       for (let j = 1; j <= this.config.n; j++) {
@@ -128,6 +155,7 @@ export class Fluid {
         currProperty[index] = this.advectProperty(i, j, prevProperty);
       }
     }
+    this.setBoundaryCondition(b, currProperty);
   };
 
   private divergence(x: number, y: number) {
@@ -147,6 +175,9 @@ export class Fluid {
       }
     }
 
+    this.setBoundaryCondition(0, this.divergenceValues);
+    this.setBoundaryCondition(0, this.poissonValues);
+
     for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
       for (let i = 1; i <= this.config.n; i++) {
         for (let j = 1; j <= this.config.n; j++) {
@@ -159,6 +190,7 @@ export class Fluid {
             4;
         }
       }
+      this.setBoundaryCondition(0, this.poissonValues);
     }
 
     for (let i = 1; i <= this.config.n; i++) {
@@ -174,6 +206,9 @@ export class Fluid {
           0.5;
       }
     }
+
+    this.setBoundaryCondition(1, this.currVelX);
+    this.setBoundaryCondition(2, this.currVelY);
   }
 
   private addSource = (property: Float32Array, source: Float32Array) => {
@@ -184,11 +219,11 @@ export class Fluid {
   };
   private densityStep() {
     this.addSource(this.prevDens, this.densitySource);
-    this.diffusionStep(this.prevDens, this.currDens);
+    this.diffusionStep(this.prevDens, this.currDens, 0);
     let temp = this.prevDens;
     this.prevDens = this.currDens;
     this.currDens = temp;
-    this.advectionStep(this.prevDens, this.currDens);
+    this.advectionStep(this.prevDens, this.currDens, 0);
     temp = this.prevDens;
     this.prevDens = this.currDens;
     this.currDens = temp;
@@ -199,13 +234,13 @@ export class Fluid {
     this.addSource(this.prevVelX, this.velocityXSource);
     this.addSource(this.prevVelY, this.velocityYSource);
 
-    this.diffusionStep(this.prevVelX, this.currVelX);
+    this.diffusionStep(this.prevVelX, this.currVelX, 1);
 
     let temp = this.prevVelX;
     this.prevVelX = this.currVelX;
     this.currVelX = temp;
 
-    this.diffusionStep(this.prevVelY, this.currVelY);
+    this.diffusionStep(this.prevVelY, this.currVelY, 2);
 
     temp = this.prevVelY;
     this.prevVelY = this.currVelY;
@@ -213,13 +248,13 @@ export class Fluid {
 
     this.projectionStep();
 
-    this.advectionStep(this.prevVelX, this.currVelX);
+    this.advectionStep(this.prevVelX, this.currVelX, 1);
 
     temp = this.prevVelX;
     this.prevVelX = this.currVelX;
     this.currVelX = temp;
 
-    this.advectionStep(this.prevVelY, this.currVelY);
+    this.advectionStep(this.prevVelY, this.currVelY, 2);
 
     temp = this.prevVelY;
     this.prevVelY = this.currVelY;
