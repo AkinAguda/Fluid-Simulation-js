@@ -132,10 +132,27 @@ export class Fluid {
     prevProperty: Float32Array,
     currProperty: Float32Array
   ) {
-    for (let i = 1; i <= this.config.n; i++) {
-      for (let j = 1; j <= this.config.n; j++) {
-        const index = this.ix(i, j);
-        currProperty[index] = this.diffuse(i, j, prevProperty);
+    // for (let i = 1; i <= this.config.n; i++) {
+    //   for (let j = 1; j <= this.config.n; j++) {
+    //     const index = this.ix(i, j);
+    //     currProperty[index] = this.diffuse(i, j, prevProperty);
+    //   }
+    // }
+    const k = this.config.dt * this.config.diffusion;
+    for (let i = 0; i < 10; i++) {
+      for (let i = 1; i <= this.config.n; i++) {
+        for (let j = 1; j <= this.config.n; j++) {
+          const index = this.ix(i, j);
+          currProperty[index] =
+            (prevProperty[this.ix(i, j)] +
+              (k *
+                (currProperty[this.ix(i + 1, j)] +
+                  currProperty[this.ix(i - 1, j)] +
+                  currProperty[this.ix(i, j + 1)] +
+                  currProperty[this.ix(i, j - 1)])) /
+                4) /
+            (1 + k);
+        }
       }
     }
   }
