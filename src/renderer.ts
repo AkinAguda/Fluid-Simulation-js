@@ -66,7 +66,6 @@ export default class Renderer {
       }
     };
 
-    // this.resetButton = document.getElementById("reset") as HTMLButtonElement;
     this.fluid = fluid;
     this.vertices = new Float32Array(fluid.size * 12);
     this.densityPerVertex = new Float32Array(fluid.size * 6);
@@ -264,11 +263,6 @@ export default class Renderer {
     for (let i = 1; i <= n; i++) {
       for (let j = 1; j <= n; j++) {
         const index = this.fluid.ix(i, j);
-        // const vx = this.fluid.get_velocity_X(index);
-        // const vy = this.fluid.get_velocity_y(index);
-        // if (vx !== 0 && vy !== 0) {
-        //   console.log(vx, vy);
-        // }
         for (let i = index * 6; i < index * 6 + 6; i++) {
           this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index) * 5;
         }
@@ -334,15 +328,9 @@ export default class Renderer {
   }
 
   start() {
-    setInterval(() => {
-      // console.log("DENSITY", this.fluid.getDensity());
-      // console.log("VELOCITY X", this.fluid.getVelocityX());
-      console.log(this.mouseEventState.pos);
-      // console.log(this.vertices);
-      // console.log(
-      //   this.fluid.get_density_expensive().map((s) => formatDec(s) / 10)
-      // );
-    }, 4000);
+    // setInterval(() => {
+    // // Add any debug logs
+    // }, 4000);
     requestAnimationFrame(this.draw.bind(this));
   }
 }
