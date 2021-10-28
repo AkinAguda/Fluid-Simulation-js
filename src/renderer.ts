@@ -93,8 +93,8 @@ export default class Renderer {
     // console.log(x, y);
 
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const eventY = e.clientX - rect.left; //x position within the element.
-    const eventX = e.clientY - rect.top; //y position within the element.
+    const eventX = e.clientX - rect.left; //x position within the element.
+    const eventY = e.clientY - rect.top; //y position within the element.
     let prevPos = this.mouseEventState.pos;
     const [multiX, multiY] = getMultipliers(
       prevPos.x,
@@ -110,7 +110,7 @@ export default class Renderer {
     this.storeEventLocation(e);
   }
 
-  addD(y: number, x: number) {
+  addD(x: number, y: number) {
     this.fluid.addDensity(this.fluid.ix(x, y), random(5, 10));
   }
 
@@ -120,8 +120,8 @@ export default class Renderer {
     const x = e.clientX - rect.left; //x position within the element.
     const y = e.clientY - rect.top; //y position within the element.
     this.mouseEventState.pos = {
-      x: y,
-      y: x,
+      x,
+      y,
     };
   }
 
@@ -231,9 +231,10 @@ export default class Renderer {
     const halfSquare = this.gl.canvas.width / (n + 2) / 2;
     for (let i = 0; i < n + 2; i++) {
       for (let j = 0; j < n + 2; j++) {
+        // TODO: Look into this
         const center = [
-          halfSquare * 2 * i + halfSquare,
           halfSquare * 2 * j + halfSquare,
+          halfSquare * 2 * i + halfSquare,
         ];
 
         // Vertex 1 coords
@@ -343,8 +344,10 @@ export default class Renderer {
 
   start() {
     setInterval(() => {
-      console.log("DENSITY", this.fluid.getDensity());
-      console.log("VELOCITY X", this.fluid.getVelocityX());
+      // console.log("DENSITY", this.fluid.getDensity());
+      // console.log("VELOCITY X", this.fluid.getVelocityX());
+      // console.log(this.mouseEventState.pos);
+      console.log(this.vertices);
       // console.log(
       //   this.fluid.get_density_expensive().map((s) => formatDec(s) / 10)
       // );
