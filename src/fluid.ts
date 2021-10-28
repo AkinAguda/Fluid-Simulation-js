@@ -163,12 +163,9 @@ export class Fluid {
   };
 
   private divergence(x: number, y: number) {
-    return (
-      0.5 *
-      (this.currVelX[this.ix(x + 1, y)] -
-        this.currVelX[this.ix(x - 1, y)] +
-        (this.currVelX[this.ix(x, y + 1)] - this.currVelX[this.ix(x, y - 1)]))
-    );
+    let a = this.currVelX[this.ix(x + 1, y)] - this.currVelX[this.ix(x - 1, y)];
+    let b = this.currVelY[this.ix(x, y + 1)] - this.currVelY[this.ix(x, y - 1)];
+    return 0.5 * (a + b);
   }
 
   private projectionStep() {
