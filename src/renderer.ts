@@ -96,11 +96,7 @@ export default class Renderer {
       eventX,
       eventY
     );
-    this.fluid.addVelocity(
-      this.fluid.ix(x, y),
-      Math.random() * 1000 * multiX,
-      Math.random() * 1000 * multiY
-    );
+    this.fluid.addVelocity(this.fluid.ix(x, y), 100 * multiX, 100 * multiY);
     this.storeEventLocation(e);
   }
 
