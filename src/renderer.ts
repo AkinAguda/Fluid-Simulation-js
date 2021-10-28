@@ -86,12 +86,7 @@ export default class Renderer {
     this.initializeWebGL();
   }
 
-  addV(y: number, x: number, e: MouseEvent) {
-    // let amtX = x - Math.abs(this.mouseEventState.pos.x);
-    // let amtY = y - Math.abs(this.mouseEventState.pos.y);
-
-    // console.log(x, y);
-
+  addV(x: number, y: number, e: MouseEvent) {
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
     const eventX = e.clientX - rect.left; //x position within the element.
     const eventY = e.clientY - rect.top; //y position within the element.
@@ -134,10 +129,6 @@ export default class Renderer {
     } else if (this.mode === 2) {
       this.addD(x, y);
     }
-
-    // this.mouseEventState.pos.x = y;
-    // this.mouseEventState.pos.y = x;
-    // this.fluid.simulate();
   };
 
   addEventHandlers() {
