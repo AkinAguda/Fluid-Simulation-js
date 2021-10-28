@@ -337,8 +337,8 @@ export default class Renderer {
     setInterval(() => {
       // console.log("DENSITY", this.fluid.getDensity());
       // console.log("VELOCITY X", this.fluid.getVelocityX());
-      // console.log(this.mouseEventState.pos);
-      console.log(this.vertices);
+      console.log(this.mouseEventState.pos);
+      // console.log(this.vertices);
       // console.log(
       //   this.fluid.get_density_expensive().map((s) => formatDec(s) / 10)
       // );
