@@ -96,7 +96,7 @@ export default class Renderer {
       eventX,
       eventY
     );
-    this.fluid.addVelocity(this.fluid.ix(x, y), 100 * multiX, 100 * multiY);
+    this.fluid.addVelocity(this.fluid.ix(x, y), 200 * multiX, 200 * multiY);
     this.storeEventLocation(e);
   }
 
@@ -260,7 +260,7 @@ export default class Renderer {
       for (let j = 1; j <= n; j++) {
         const index = this.fluid.ix(i, j);
         for (let i = index * 6; i < index * 6 + 6; i++) {
-          this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index) * 5;
+          this.densityPerVertex[i] = this.fluid.getDensityAtIndex(index);
         }
       }
     }
