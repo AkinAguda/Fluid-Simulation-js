@@ -146,6 +146,10 @@ export default class Renderer {
     this.canvas.addEventListener("mouseup", () => {
       this.mouseEventState = { ...this.defaultMouseEventState };
     });
+
+    this.canvas.addEventListener("mouseout", () => {
+      this.mouseEventState = { ...this.defaultMouseEventState };
+    });
   }
 
   private initializeWebGL() {

@@ -3,6 +3,7 @@
     width: 100vw; */
   height: 500px;
   width: 500px;
+  max-width: 90vw;
   /* border: 2px solid red; */
 }
 
@@ -20,4 +21,14 @@ html {
 
 .button-box {
   margin-top: 30px;
+}
+
+button {
+  height: 40px;
+  width: 100px;
+  background-color: black;
+  color: white;
+  cursor: pointer;
+  border: none;
+  font-size: 20px;
 }
