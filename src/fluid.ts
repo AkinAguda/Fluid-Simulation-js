@@ -249,18 +249,26 @@ export class Fluid {
 
     this.projectionStep();
 
-    this.advectionStep(this.prevVelX, this.currVelX, 1);
-
     temp = this.prevVelX;
     this.prevVelX = this.currVelX;
     this.currVelX = temp;
-
-    this.advectionStep(this.prevVelY, this.currVelY, 2);
 
     temp = this.prevVelY;
     this.prevVelY = this.currVelY;
     this.currVelY = temp;
 
+    this.advectionStep(this.prevVelX, this.currVelX, 1);
+
+    this.advectionStep(this.prevVelY, this.currVelY, 2);
+
     this.projectionStep();
+
+    temp = this.prevVelX;
+    this.prevVelX = this.currVelX;
+    this.currVelX = temp;
+
+    temp = this.prevVelY;
+    this.prevVelY = this.currVelY;
+    this.currVelY = temp;
   }
 }
