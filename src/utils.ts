@@ -1,12 +1,12 @@
 export const getClientValues = (event: MouseEvent | TouchEvent) => {
   const clientX =
-    event.type === "mousemove"
+    event.type === "mousemove" || event.type === "click"
       ? (event as MouseEvent).clientX
       : (event as TouchEvent).changedTouches[
           (event as TouchEvent).changedTouches.length - 1
         ].clientX;
   const clientY =
-    event.type === "mousemove"
+    event.type === "mousemove" || event.type === "click"
       ? (event as MouseEvent).clientY
       : (event as TouchEvent).changedTouches[
           (event as TouchEvent).changedTouches.length - 1
