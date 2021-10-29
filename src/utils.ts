@@ -1,10 +1,27 @@
+export const getClientValues = (event: MouseEvent | TouchEvent) => {
+  const clientX =
+    event.type === "mousemove"
+      ? (event as MouseEvent).clientX
+      : (event as TouchEvent).changedTouches[
+          (event as TouchEvent).changedTouches.length - 1
+        ].clientX;
+  const clientY =
+    event.type === "mousemove"
+      ? (event as MouseEvent).clientY
+      : (event as TouchEvent).changedTouches[
+          (event as TouchEvent).changedTouches.length - 1
+        ].clientY;
+  return [clientX, clientY];
+};
+
 export const getEventLocation = (
-  e: MouseEvent,
-  n: number
+  n: number,
+  rect: DOMRect,
+  clientX: number,
+  clientY: number
 ): [number, number] => {
-  const rect = (e.target as HTMLButtonElement).getBoundingClientRect();
-  const x = e.clientX - rect.left; //x position within the element.
-  const y = e.clientY - rect.top; //y position within the element.
+  const x = clientX - rect.left; //x position within the element.
+  const y = clientY - rect.top; //y position within the element.
   const hRatio = n / rect.height;
   const wRatio = n / rect.width;
   const convertedX = Math.round(x * wRatio);

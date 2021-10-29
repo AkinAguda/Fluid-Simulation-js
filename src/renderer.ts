@@ -7,6 +7,7 @@ import {
   getEventLocation,
   random,
   getMultipliers,
+  getClientValues,
 } from "./utils";
 
 export default class Renderer {
@@ -85,10 +86,10 @@ export default class Renderer {
     this.initializeWebGL();
   }
 
-  addV(x: number, y: number, e: MouseEvent) {
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const eventX = e.clientX - rect.left; //x position within the element.
-    const eventY = e.clientY - rect.top; //y position within the element.
+  addV(x: number, y: number, clientX: number, clientY: number) {
+    const rect = this.canvas.getBoundingClientRect();
+    const eventX = clientX - rect.left; //x position within the element.
+    const eventY = clientY - rect.top; //y position within the element.
     let prevPos = this.mouseEventState.pos;
     const [multiX, multiY] = getMultipliers(
       prevPos.x,
@@ -97,30 +98,29 @@ export default class Renderer {
       eventY
     );
     this.fluid.addVelocity(this.fluid.ix(x, y), 200 * multiX, 200 * multiY);
-    this.storeEventLocation(e);
+    this.storeEventLocation(clientX, clientY);
   }
 
   addD(x: number, y: number) {
     this.fluid.addDensity(this.fluid.ix(x, y), random(5, 10));
   }
 
-  storeEventLocation(e: MouseEvent) {
-    // UPDATE THIS
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-    const x = e.clientX - rect.left; //x position within the element.
-    const y = e.clientY - rect.top; //y position within the element.
+  storeEventLocation(clientX: number, clientY: number) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = clientX - rect.left; //x position within the element.
+    const y = clientY - rect.top; //y position within the element.
     this.mouseEventState.pos = {
       x,
       y,
     };
   }
 
-  handleEvent = (x: number, y: number, e: MouseEvent) => {
+  handleEvent = (x: number, y: number, clientX: number, clientY: number) => {
     if (this.mode === 0) {
-      this.addV(x, y, e);
+      this.addV(x, y, clientX, clientY);
       this.addD(x, y);
     } else if (this.mode === 1) {
-      this.addV(x, y, e);
+      this.addV(x, y, clientX, clientY);
     } else if (this.mode === 2) {
       this.addD(x, y);
     }
@@ -135,19 +135,68 @@ export default class Renderer {
     this.canvas.addEventListener("mousemove", (e) => {
       if (this.mouseEventState.mouseDown) {
         this.mouseEventState = { ...this.mouseEventState, dragging: true };
-        this.handleEvent(...getEventLocation(e, n), e);
+        const [clientX, clientY] = getClientValues(e);
+        this.handleEvent(
+          ...getEventLocation(
+            n,
+            (e.target as HTMLCanvasElement).getBoundingClientRect(),
+            clientX,
+            clientY
+          ),
+          clientX,
+          clientY
+        );
+      }
+    });
+
+    this.canvas.addEventListener("touchmove", (e) => {
+      if (this.mouseEventState.mouseDown) {
+        this.mouseEventState = { ...this.mouseEventState, dragging: true };
+        const [clientX, clientY] = getClientValues(e);
+        this.handleEvent(
+          ...getEventLocation(
+            n,
+            (e.target as HTMLCanvasElement).getBoundingClientRect(),
+            clientX,
+            clientY
+          ),
+          clientX,
+          clientY
+        );
       }
     });
 
     this.canvas.addEventListener("click", (e) => {
-      this.handleEvent(...getEventLocation(e, n), e);
+      const [clientX, clientY] = getClientValues(e);
+      this.handleEvent(
+        ...getEventLocation(
+          n,
+          (e.target as HTMLCanvasElement).getBoundingClientRect(),
+          clientX,
+          clientY
+        ),
+        clientX,
+        clientY
+      );
+    });
+
+    this.canvas.addEventListener("touchstart", (e) => {
+      this.mouseEventState = { ...this.mouseEventState, mouseDown: true };
     });
 
     this.canvas.addEventListener("mouseup", () => {
       this.mouseEventState = { ...this.defaultMouseEventState };
     });
 
+    this.canvas.addEventListener("touchend", () => {
+      this.mouseEventState = { ...this.defaultMouseEventState };
+    });
+
     this.canvas.addEventListener("mouseout", () => {
+      this.mouseEventState = { ...this.defaultMouseEventState };
+    });
+
+    this.canvas.addEventListener("touchcancel", () => {
       this.mouseEventState = { ...this.defaultMouseEventState };
     });
   }
