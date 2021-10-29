@@ -1,4 +1,4 @@
-# My Attempt at fluid simulation with [navier stokes](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations)<br><br>
+# My Attempt at fluid simulation with [navier stokes equations](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations)<br>
 
 ## Resources<br>
 
