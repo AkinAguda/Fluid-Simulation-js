@@ -57,23 +57,37 @@ export class Fluid {
     this.densitySource[index] = value;
   };
 
-  getDensityAtIndex(index: number) {
+  getDensityAtIndex = (index: number) => {
     return this.currDens[index];
-  }
+  };
 
-  getDensity() {
+  getDensity = () => {
     return this.currDens;
-  }
+  };
 
-  getVelocityX() {
+  getVelocityX = () => {
     return this.currVelX;
-  }
+  };
 
-  private diffusionStep(
+  clear = () => {
+    this.currVelX = new Float32Array(this.size);
+    this.prevVelX = new Float32Array(this.size);
+    this.currVelY = new Float32Array(this.size);
+    this.prevVelY = new Float32Array(this.size);
+    this.currDens = new Float32Array(this.size);
+    this.prevDens = new Float32Array(this.size);
+    this.densitySource = new Float32Array(this.size);
+    this.velocityXSource = new Float32Array(this.size);
+    this.velocityYSource = new Float32Array(this.size);
+    this.divergenceValues = new Float32Array(this.size);
+    this.poissonValues = new Float32Array(this.size);
+  };
+
+  private diffusionStep = (
     prevProperty: Float32Array,
     currProperty: Float32Array,
     b: number
-  ) {
+  ) => {
     const k = this.config.dt * this.config.diffusion;
     for (let i = 0; i < GAUSS_SEIDEL_TERATIONS; i++) {
       for (let i = 1; i <= this.config.n; i++) {
@@ -92,7 +106,7 @@ export class Fluid {
       }
       this.setBoundaryCondition(b, currProperty);
     }
-  }
+  };
 
   private setBoundaryCondition = (b: number, property: Float32Array) => {
     const n = this.config.n;
@@ -162,13 +176,13 @@ export class Fluid {
     this.setBoundaryCondition(b, currProperty);
   };
 
-  private divergence(x: number, y: number) {
+  private divergence = (x: number, y: number) => {
     let a = this.currVelX[this.ix(x + 1, y)] - this.currVelX[this.ix(x - 1, y)];
     let b = this.currVelY[this.ix(x, y + 1)] - this.currVelY[this.ix(x, y - 1)];
     return 0.5 * (a + b);
-  }
+  };
 
-  private projectionStep() {
+  private projectionStep = () => {
     for (let i = 1; i <= this.config.n; i++) {
       for (let j = 1; j <= this.config.n; j++) {
         this.divergenceValues[this.ix(i, j)] = this.divergence(i, j);
@@ -210,7 +224,7 @@ export class Fluid {
 
     this.setBoundaryCondition(1, this.currVelX);
     this.setBoundaryCondition(2, this.currVelY);
-  }
+  };
 
   private addSource = (property: Float32Array, source: Float32Array) => {
     for (let i = 0; i < this.size; i++) {
@@ -218,7 +232,7 @@ export class Fluid {
       source[i] = 0;
     }
   };
-  private densityStep() {
+  private densityStep = () => {
     this.addSource(this.prevDens, this.densitySource);
     this.diffusionStep(this.prevDens, this.currDens, 0);
     let temp = this.prevDens;
@@ -230,8 +244,8 @@ export class Fluid {
     this.currDens = temp;
     // curr - val after advec
     // prev - val before advec
-  }
-  private velocityStep() {
+  };
+  private velocityStep = () => {
     this.addSource(this.prevVelX, this.velocityXSource);
     this.addSource(this.prevVelY, this.velocityYSource);
 
@@ -270,5 +284,5 @@ export class Fluid {
     temp = this.prevVelY;
     this.prevVelY = this.currVelY;
     this.currVelY = temp;
-  }
+  };
 }

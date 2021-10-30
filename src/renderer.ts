@@ -15,6 +15,7 @@ export default class Renderer {
   private gl: WebGLRenderingContext;
   //   private resetButton: HTMLButtonElement;
   private modeButton: HTMLButtonElement;
+  private clearButton: HTMLButtonElement;
   private mode = 0;
   private vertices: Float32Array;
   private fluid: Fluid;
@@ -46,6 +47,7 @@ export default class Renderer {
   constructor(fluid: Fluid) {
     this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
     this.gl = this.canvas.getContext("webgl");
+    this.clearButton = document.getElementById("clear") as HTMLButtonElement;
     resizeCanvasToDisplaySize(this.gl.canvas);
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
     this.gl.clearColor(0, 0, 0, 0);
@@ -68,6 +70,7 @@ export default class Renderer {
     };
 
     this.fluid = fluid;
+    this.clearButton.onclick = this.fluid.clear;
     this.vertices = new Float32Array(fluid.size * 12);
     this.densityPerVertex = new Float32Array(fluid.size * 6);
     this.webglData = {
