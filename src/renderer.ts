@@ -108,7 +108,7 @@ export default class Renderer {
     this.fluid.addDensity(this.fluid.ix(x, y), random(5, 10));
   }
 
-  storeEventLocation(clientX: number, clientY: number) {
+  storeEventLocation = (clientX: number, clientY: number) => {
     const rect = this.canvas.getBoundingClientRect();
     const x = clientX - rect.left; //x position within the element.
     const y = clientY - rect.top; //y position within the element.
@@ -116,7 +116,7 @@ export default class Renderer {
       x,
       y,
     };
-  }
+  };
 
   handleEvent = (x: number, y: number, clientX: number, clientY: number) => {
     if (this.mode === 0) {
