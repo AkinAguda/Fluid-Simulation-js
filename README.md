@@ -1,4 +1,12 @@
-# My Attempt at fluid simulation with [navier stokes equations](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations)<br>
+
+
+
+# Interactive fluid simulation with [navier stokes equations](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations)<br>
+![demo gif](https://media.giphy.com/media/c0kUdZYohgy1PiwCEH/giphy.gif)
+
+
+Live Demo https://akin-fluid-simulation.netlify.app/
+
 
 ## Resources<br>
 
