@@ -1,12 +1,8 @@
-
-
-
 # Interactive fluid simulation with [navier stokes equations](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations)<br>
+
 ![demo gif](https://media.giphy.com/media/c0kUdZYohgy1PiwCEH/giphy.gif)
 
-
 Live Demo https://akin-fluid-simulation.netlify.app/
-
 
 ## Resources<br>
 
@@ -15,3 +11,7 @@ Fluid Simulation SIGGRAPH 2007 Course Notes by Robert Bridson and Matthias Mulle
 Gonkee's [video](https://www.youtube.com/watch?v=qsYE1wMEMPA&t)<br>
 3Blue1Brown's [video on divergence and curl](https://www.youtube.com/watch?v=rB83DpBJQsE&t)<br>
 The Coding Train's [video](https://www.youtube.com/watch?v=alhpH6ECFvQ&t)<br>
+
+## Contribution
+
+- Run `npm run start:dev` the application will open up on localhost:8000
