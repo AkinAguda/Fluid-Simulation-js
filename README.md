@@ -2,7 +2,7 @@
 
 ![demo gif](https://media.giphy.com/media/c0kUdZYohgy1PiwCEH/giphy.gif)
 
-Live Demo https://akin-fluid-simulation.netlify.app/
+Live Demo https://akin-fluid-simulation-js.netlify.app/
 
 ## Resources<br>
 
